@@ -15,8 +15,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -38,7 +40,7 @@ public class AuthUserControler {
     private TokenService tokenService;
 
     @PostMapping("/login")
-    public ResponseEntity login(@RequestBody @Valid AuthRequestDTO dto){
+    public ResponseEntity login(@RequestBody @Valid AuthRequestDTO dto) {
         var usernamePassword = new UsernamePasswordAuthenticationToken(dto.email(), dto.password());
         var auth = this.authenticationManager.authenticate(usernamePassword);
 
@@ -52,15 +54,15 @@ public class AuthUserControler {
                 .role(user.getRole())
                 .build();
 
-        return new ResponseEntity<>(new AuthResponseDTO(userDTO, token),HttpStatus.OK);
+        return new ResponseEntity<>(new AuthResponseDTO(userDTO, token), HttpStatus.OK);
     }
 
     @PostMapping("/register")
-    public ResponseEntity register(@RequestBody @Valid RegisterDTO dto){
-        if(this.userRepository.findByEmail(dto.email()) != null){
+    public ResponseEntity register(@RequestBody @Valid RegisterDTO dto) {
+        if (this.userRepository.findByEmail(dto.email()) != null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        try{
+        try {
             String encryptedPassword = new BCryptPasswordEncoder().encode(dto.password());
             User user = User.builder()
                     .email(dto.email())
@@ -71,18 +73,18 @@ public class AuthUserControler {
 
             this.userRepository.save(user);
             return new ResponseEntity<>(true, HttpStatus.CREATED);
-        }catch (Exception e){
-            return new ResponseEntity<>(e.getMessage(),HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
 
     }
 
-    @PostMapping("/validate-token")
-    public ResponseEntity validateToken(@RequestBody @Valid String token){
-        System.out.println(token);
+    @PostMapping("/validate")
+    public ResponseEntity validateToken(@RequestHeader("Authorization") String token) {
         String userId = tokenService.validateToken(token);
+        System.out.println(userId);
         User user = userRepository.findById(UUID.fromString(userId))
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElse(null);
 
         return new ResponseEntity<>(user, HttpStatus.OK);
     }

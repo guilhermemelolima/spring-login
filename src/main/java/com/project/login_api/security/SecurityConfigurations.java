@@ -38,10 +38,10 @@ public class SecurityConfigurations {
 
                         .requestMatchers(HttpMethod.POST, "/auth/user/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/user/register").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/user/validate").permitAll()
 
                         .requestMatchers(PERMIT_ALL_LIST).permitAll()
-                        .anyRequest().authenticated()
-                )
+                        .anyRequest().authenticated())
                 .headers(AbstractHttpConfigurer::disable)
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
@@ -55,7 +55,7 @@ public class SecurityConfigurations {
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder(){
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 }
