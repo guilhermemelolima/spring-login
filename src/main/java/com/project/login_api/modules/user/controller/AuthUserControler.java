@@ -84,9 +84,16 @@ public class AuthUserControler {
         String userId = tokenService.validateToken(token);
         System.out.println(userId);
         User user = userRepository.findById(UUID.fromString(userId))
-                .orElse(null);
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        return new ResponseEntity<>(user, HttpStatus.OK);
+        UserDTO userDTO = UserDTO.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .name(user.getName())
+                .role(user.getRole())
+                .build();
+
+        return new ResponseEntity<>(userDTO, HttpStatus.OK);
     }
 
 }
